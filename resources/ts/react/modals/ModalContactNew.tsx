@@ -2,14 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal, Schema } from "rsuite";
 import Form from "rsuite/Form";
 import Field from "../components/Field";
-import HttpClient from "../helpers/HttpClient";
 
 interface IProps {
-    project: IProject;
     contact: IContact | null;
     open: boolean;
     onClose: () => void;
-    onSave: (contacts: IContact[], isCreate: boolean) => void;
+    onSave: (values: any, contact: IContact | null) => void;
 }
 
 const validationRules = Schema.Model({
@@ -19,15 +17,13 @@ const validationRules = Schema.Model({
         .isEmail("Nem érvényes e-mail formátum"),
 });
 
-const ModalContact: React.FC<IProps> = ({
-    project,
+const ModalContactNew: React.FC<IProps> = ({
     contact,
     open,
     onClose,
     onSave,
 }) => {
     const formRef = useRef<any>();
-    const [loading, setLoading] = useState<boolean>(false);
     const [formValue, setFormValue] = useState<any>({
         name: "",
         email: "",
@@ -53,38 +49,8 @@ const ModalContact: React.FC<IProps> = ({
             return;
         }
 
-        setLoading(true);
-
-        if (contact) {
-            HttpClient({
-                url: `/api/contact/${project.id}/${contact.id}`,
-                method: "post",
-                data: formValue,
-            })
-                .then((res: any) => {
-                    window.addNotification("success", "Sikeres mentés");
-                    onSave(res.data, false);
-                    onClose();
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
-            return;
-        }
-
-        HttpClient({
-            url: `/api/contact/${project.id}`,
-            method: "post",
-            data: formValue,
-        })
-            .then((res: any) => {
-                window.addNotification("success", "Sikeres létrehozás");
-                onSave(res.data, true);
-                onClose();
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        onSave(formValue, contact);
+        onClose();
     };
 
     return (
@@ -100,8 +66,8 @@ const ModalContact: React.FC<IProps> = ({
                     model={validationRules}
                     fluid
                 >
-                    <Field name="name" label="Név" disabled={loading} />
-                    <Field name="email" label="E-mail cím" disabled={loading} />
+                    <Field name="name" label="Név" />
+                    <Field name="email" label="E-mail cím" />
                 </Form>
             </Modal.Body>
             <Modal.Footer>
@@ -109,7 +75,6 @@ const ModalContact: React.FC<IProps> = ({
                     appearance="primary"
                     color="blue"
                     onClick={() => handleSave()}
-                    loading={loading}
                 >
                     {contact ? "Mentés" : "Létrehozás"}
                 </Button>
@@ -118,4 +83,4 @@ const ModalContact: React.FC<IProps> = ({
     );
 };
 
-export default ModalContact;
+export default ModalContactNew;

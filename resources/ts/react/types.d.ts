@@ -9,9 +9,9 @@ interface IProject {
 }
 
 interface IContact {
-    id: number;
+    id?: number;
     name: string;
     email: string;
-    create_at: string;
-    updated_at: string;
+    create_at?: string;
+    updated_at?: string;
 }

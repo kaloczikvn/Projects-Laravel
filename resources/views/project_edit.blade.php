@@ -5,5 +5,5 @@
 @endphp
 
 @section('content')
-    <div class="react-page-project" data-cast-json-project='@json($project)'></div>
+    <div class="react-page-project-edit" data-cast-json-project='@json($project)'></div>
 @endsection

@@ -27,6 +27,9 @@ class PostProjectRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'status' => 'required|integer|min:0|max:2',
+            'contacts' => 'nullable|array',
+            'contacts.*.name' => 'required|string',
+            'contacts.*.email' => 'required|string|email:rfc,dns',
         ];
     }
 

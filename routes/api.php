@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/projects', [ProjectsController::class, 'getProjects']);
 
-Route::post('/project/{project}', [ProjectsController::class, 'postProject']);
+Route::post('/project/{project?}', [ProjectsController::class, 'postProject']);
 Route::delete('/project/{project}', [ProjectsController::class, 'deleteProject']);
 
-Route::post('/contact/{contact?}', [ContactsController::class, 'postContact']);
-Route::delete('/contact/{contact}', [ContactsController::class, 'deleteContact']);
+Route::post('/contact/{project}/{contact?}', [ContactsController::class, 'postContact']);
+Route::delete('/contact/{project}/{contact}', [ContactsController::class, 'deleteContact']);

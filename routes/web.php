@@ -15,4 +15,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [ProjectsController::class, 'getProjects'])->name('projects');
-Route::get('/{project}', [ProjectsController::class, 'getProject'])->name('project');
+Route::get('/new', [ProjectsController::class, 'getProjectNew'])->name('project-new');
+Route::get('/{project}', [ProjectsController::class, 'getProjectEdit'])->name('project-edit');

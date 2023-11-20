@@ -39,7 +39,6 @@ class PostContactRequest extends FormRequest
         return [
             'name' => 'Név',
             'description' => 'Leírás',
-            'status' => 'Státusz',
         ];
     }
 

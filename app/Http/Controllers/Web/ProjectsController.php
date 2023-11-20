@@ -13,9 +13,14 @@ class ProjectsController extends Controller
         return view('projects');
     }
 
-    public function getProject(Project $project)
+    public function getProjectNew(Request $request)
     {
-        return view('project', [
+        return view('project_new');
+    }
+
+    public function getProjectEdit(Project $project)
+    {
+        return view('project_edit', [
             'project' => $project->load(['contacts']),
         ]);
     }

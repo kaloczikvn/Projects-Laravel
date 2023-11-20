@@ -40,7 +40,16 @@ const PageProjects: React.FC = () => {
             <Grid>
                 <Row>
                     <Col md={24}>
-                        <h1 style={{ padding: "40px 0" }}>Projektek</h1>
+                        <h1 style={{ marginBottom: 20, marginTop: 60 }}>
+                            Projektek
+                        </h1>
+                        <Button
+                            appearance="primary"
+                            style={{ marginBottom: 20 }}
+                            href="/new"
+                        >
+                            Új projekt hozzáadása
+                        </Button>
                         <CheckPicker
                             data={ProjectStatusNames.map((value, index) => ({
                                 label: value,

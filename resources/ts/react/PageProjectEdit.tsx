@@ -1,12 +1,10 @@
-import React, { forwardRef, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     Button,
     ButtonToolbar,
     Col,
     Form,
     Grid,
-    Input,
-    InputNumber,
     InputPicker,
     List,
     Modal,
@@ -17,36 +15,29 @@ import HttpClient from "./helpers/HttpClient";
 import { ProjectStatusNames } from "./helpers/Enums";
 import PageWrapper from "./layout/PageWrapper";
 import Field from "./components/Field";
+import ModalContact from "./modals/ModalContact";
 
-const { StringType, NumberType, ArrayType, ObjectType } = Schema.Types;
+const { StringType, NumberType } = Schema.Types;
 const model = Schema.Model({
     name: StringType().isRequired("Kötelező mező"),
     description: StringType().isRequired("Kötelező mező"),
     status: NumberType("Nem megfelelő státusz")
         .range(0, 2, "Kérem válasszon érvényes státuszt.")
         .isRequired("Kötelező mező"),
-    contacts: ArrayType().of(
-        ObjectType().shape({
-            name: StringType().isRequired("Kötelező mező"),
-            email: StringType()
-                .isRequired("Kötelező mező")
-                .isEmail("Nem érvényes e-mail formátum"),
-        })
-    ),
 });
 
 interface IProps {
     project: IProject;
 }
 
-const PageProject: React.FC<IProps> = ({ project }) => {
+const PageProjectEdit: React.FC<IProps> = ({ project }) => {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    /*const [contacts, setContacts] = useState<IContact[]>(
+    const [contacts, setContacts] = useState<IContact[]>(
         project?.contacts ?? []
     );
     const [showContactModal, setShowContactModal] = useState<boolean>(false);
-    const [contactModal, setContactModal] = useState<IContact | null>(null);*/
+    const [contactModal, setContactModal] = useState<IContact | null>(null);
 
     const formRef = useRef<any>();
     const [formError, setFormError] = useState({});
@@ -54,10 +45,6 @@ const PageProject: React.FC<IProps> = ({ project }) => {
         name: project.name,
         description: project.description,
         status: project.status,
-        contacts: project.contacts.map((c) => ({
-            name: c.name,
-            email: c.email,
-        })),
     });
 
     const handleSubmit = () => {
@@ -65,7 +52,6 @@ const PageProject: React.FC<IProps> = ({ project }) => {
             return;
         }
 
-        // console.log(formValue);
         setLoading(true);
         HttpClient({
             url: `/api/project/${project.id}`,
@@ -84,15 +70,31 @@ const PageProject: React.FC<IProps> = ({ project }) => {
             });
     };
 
+    const handleDeleteContact = (contact: IContact) => {
+        setLoading(true);
+        HttpClient({
+            url: `/api/contact/${project.id}/${contact.id}`,
+            method: "delete",
+        })
+            .then((res: any) => {
+                window.addNotification("success", "Sikeres törlés");
+                setContacts(res.data);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
+
     return (
         <PageWrapper>
             <Grid>
-                <Row>
+                <Row style={{ marginBottom: 30 }}>
                     <Col md={24}>
                         <h1 style={{ padding: "40px 0" }}>{project.name}</h1>
 
                         <Form
                             ref={formRef}
+                            // @ts-ignore
                             onChange={setFormValue}
                             onCheck={setFormError}
                             formValue={formValue}
@@ -115,38 +117,6 @@ const PageProject: React.FC<IProps> = ({ project }) => {
                                 block
                             />
 
-                            {JSON.stringify(project.contacts)}
-                            {/*
-                            <Form.Group>
-                                <Form.ControlLabel>
-                                    Kapcsolattartók
-                                </Form.ControlLabel>
-                                <List bordered>
-                                    {contacts.length === 0 ? (
-                                        <List.Item>
-                                            <i>Nem található kapcsolattató</i>
-                                        </List.Item>
-                                    ) : (
-                                        <>
-                                            {contacts.map((contact) => (
-                                                <List.Item
-                                                    key={`contact-${contact.id}`}
-                                                >
-                                                    {`${contact.name} - ${contact.email}`}
-                                                </List.Item>
-                                            ))}
-                                        </>
-                                    )}
-                                </List>
-                                <Button
-                                    style={{ marginTop: 15 }}
-                                    onClick={() => setShowContactModal(true)}
-                                >
-                                    Új kapcsolattartó
-                                </Button>
-                            </Form.Group>
-                            */}
-
                             <ButtonToolbar>
                                 <Button
                                     appearance="link"
@@ -167,21 +137,79 @@ const PageProject: React.FC<IProps> = ({ project }) => {
                         </Form>
                     </Col>
                 </Row>
+                <Row>
+                    <Col md={24}>
+                        <Form.Group>
+                            <Form.ControlLabel>
+                                Kapcsolattartók
+                            </Form.ControlLabel>
+                            <List bordered>
+                                {contacts.length === 0 ? (
+                                    <List.Item>
+                                        <i>Nem található kapcsolattató</i>
+                                    </List.Item>
+                                ) : (
+                                    <>
+                                        {contacts.map((contact) => (
+                                            <List.Item
+                                                key={`contact-${contact.id}`}
+                                            >
+                                                {`${contact.name} - ${contact.email}`}
+                                                <Button
+                                                    appearance="link"
+                                                    size="xs"
+                                                    onClick={() => {
+                                                        setContactModal(
+                                                            contact
+                                                        );
+                                                        setShowContactModal(
+                                                            true
+                                                        );
+                                                    }}
+                                                    disabled={loading}
+                                                >
+                                                    Szerkeszéts
+                                                </Button>
+                                                <Button
+                                                    appearance="link"
+                                                    color="red"
+                                                    size="xs"
+                                                    onClick={() =>
+                                                        handleDeleteContact(
+                                                            contact
+                                                        )
+                                                    }
+                                                    disabled={loading}
+                                                >
+                                                    Törlés
+                                                </Button>
+                                            </List.Item>
+                                        ))}
+                                    </>
+                                )}
+                            </List>
+                            <Button
+                                style={{ marginTop: 15 }}
+                                onClick={() => setShowContactModal(true)}
+                            >
+                                Új kapcsolattartó
+                            </Button>
+                        </Form.Group>
+                    </Col>
+                </Row>
             </Grid>
-
-            {/*
             <ModalContact
+                project={project}
                 contact={contactModal}
                 open={showContactModal}
                 onClose={() => {
                     setShowContactModal(false);
                     setContactModal(null);
                 }}
-                onSave={function (contact: IContact, isCreate: boolean): void {
-                    throw new Error("Function not implemented.");
+                onSave={(contacts: IContact[], isCreate: boolean) => {
+                    setContacts(contacts);
                 }}
             />
-            */}
             <Modal
                 open={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
@@ -224,59 +252,4 @@ const PageProject: React.FC<IProps> = ({ project }) => {
         </PageWrapper>
     );
 };
-export default PageProject;
-
-export const Cell = ({ children, style, ...rest }: any) => (
-    <td
-        style={{ padding: "2px 4px 2px 0", verticalAlign: "top", ...style }}
-        {...rest}
-    >
-        {children}
-    </td>
-);
-
-export const ContactItem = ({
-    rowValue = {},
-    onChange,
-    rowIndex,
-    rowError,
-}: any) => {
-    const handleChangeName = (value) => {
-        onChange(rowIndex, { ...rowValue, name: value });
-    };
-    const handleChangeAmount = (value) => {
-        onChange(rowIndex, { ...rowValue, quantity: value });
-    };
-
-    return (
-        <tr>
-            <Cell>
-                <Input
-                    value={rowValue.name}
-                    onChange={handleChangeName}
-                    style={{ width: 196 }}
-                />
-                {rowError ? (
-                    <ErrorMessage>{rowError.name.errorMessage}</ErrorMessage>
-                ) : null}
-            </Cell>
-            <Cell>
-                <InputNumber
-                    min={0}
-                    value={rowValue.quantity}
-                    onChange={handleChangeAmount}
-                    style={{ width: 100 }}
-                />
-                {rowError ? (
-                    <ErrorMessage>
-                        {rowError.quantity.errorMessage}
-                    </ErrorMessage>
-                ) : null}
-            </Cell>
-        </tr>
-    );
-};
-
-const ErrorMessage = ({ children }) => (
-    <span style={{ color: "red" }}>{children}</span>
-);
+export default PageProjectEdit;
